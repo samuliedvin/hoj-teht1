@@ -10,6 +10,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,15 +19,23 @@ public class SovellusX {
 	
 	public static void main(String[] args) throws Exception {
 		ServerSocket serversocket = new ServerSocket(PORT);
-		sendUDP("localhost", 3126, "3127");
+		serversocket.setSoTimeout(60000);
 		
-		while (true) {
-			Socket clientsocket = serversocket.accept();
-			System.out.println("Connection from: " + clientsocket.getInetAddress() + " port " + clientsocket.getPort());
+		try{
 			
-			new Handler(clientsocket).start();
-		} //while
-		
+			sendUDP("localhost", 3126, "3127");
+			
+			while (true) {
+				Socket clientsocket = serversocket.accept();
+				System.out.println("Connection from: " + clientsocket.getInetAddress() + " port " + clientsocket.getPort());
+				
+				new Handler(clientsocket).start();
+			} //while
+		}
+		catch (SocketTimeoutException ste) {
+			    System.out.println("I timed out!");
+			    serversocket.close();
+			    }
 	} //main
 	
 	public static void sendUDP(String target, int port, String message) throws Exception {
@@ -88,29 +97,31 @@ public class SovellusX {
 					
 					while (true) {
 						foo = oIn.readInt();
-						
+						Thread.sleep(500);
 						if (foo == 1) {
-							System.err.println(foo + ") Palvelin haluaa tietää välitettyjen lukujen kokonaissumman.");
+							System.err.println(foo + ") Palvelin haluaa tietaa valitettyjen lukujen kokonaissumman.");
 							int sum = countSum();
-							System.err.println("No sehän on " + sum);
+							System.err.println("No sehan on " + sum);
 							
 							oOut.writeInt(sum);
 							oOut.flush();
 						} else if (foo == 2) {
-							System.err.println(foo + ") Mille summauspalvelijalle välitettyjen lukujen summa on suurin");
+							System.err.println(foo + ") Mille summauspalvelijalle valitettyjen lukujen summa on suurin");
 							int result = whatsBiggest();
-							System.err.println("No sehän on " + result);
+							System.err.println("No sehan on " + result);
 							
 							oOut.writeInt(result);
 							oOut.flush();
 							
 						} else if (foo == 3) {
-							System.err.println(foo + ") Mikä on tähän mennessä kaikille summauspalvelimille välitettyjen lukujen kokonaismäärä?");
+							System.err.println(foo + ") Mika on tahan mennessa kaikille summauspalvelimille valitettyjen lukujen kokonaismaara?");
 							int amount = getTotalAmount();
-							System.err.println("No sehän on " + amount);
+							System.err.println("No sehan on " + amount);
 							
 							oOut.writeInt(amount);
 							oOut.flush();
+						} else if(foo == 0){
+							
 						}
 						
 					} // while
@@ -140,12 +151,10 @@ public class SovellusX {
 			int server = -1;
 			
 			for(Map.Entry<Integer, Summauspalvelija> entry : palvelijat.entrySet()) {
-				int index = 0;
 			    if (entry.getValue().getSum() > biggest) {
 			    	biggest = entry.getValue().getSum();
-			    	server = index;
+			    	server = entry.getKey() - 4999;
 			    }
-			    index++;
 			}
 			
 			return server;
