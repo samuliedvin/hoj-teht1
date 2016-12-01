@@ -13,7 +13,7 @@ public class Summauspalvelija extends Thread{
 	private final String host = "127.0.0.1";
 	private Socket cs;
 	private int sum;
-	int foo;
+	private int foo;
 	private int amount = 0;
 	private ServerSocket ss;
 	
@@ -40,7 +40,7 @@ public class Summauspalvelija extends Thread{
 				while(true) {
 					
 					foo = oIn.readInt();
-					System.out.println("Käytössä palvelin portissa " + port);
+					System.out.println("Kaytossa palvelin portissa " + port);
 					System.out.println("Saatiin palvelimelta luku " + foo);
 					if(foo != 0) {
 						addSum(foo);
@@ -49,14 +49,14 @@ public class Summauspalvelija extends Thread{
 					} else {
 						oIn.close();
 						cs.close();
+						System.out.println("Suljetaan palvelu" + "  " + port);
 					}
-					System.out.println("Summa on tällä hetkellä: " + sum);
-					this.wait(NORM_PRIORITY);
+					System.out.println("Summa on talla hetkella: " + sum);
+				Thread.sleep(50);
 				} // while
 				
 			} catch (Exception e) {
-				oIn.close();
-				cs.close();
+			
 			}
 		} catch (Exception e) {
 			
